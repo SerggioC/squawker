@@ -17,6 +17,7 @@
 package android.example.com.squawker;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.example.com.squawker.following.FollowingPreferenceActivity;
 import android.example.com.squawker.provider.SquawkContract;
@@ -37,8 +38,11 @@ import android.view.MenuItem;
 import android.widget.PopupWindow;
 
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+import static android.example.com.squawker.provider.SquawkContract.INSTRUCTOR_KEYS;
+
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, SharedPreferences.OnSharedPreferenceChangeListener{
 
     private static String LOG_TAG = "Sergio> " + MainActivity.class.getSimpleName();
     private static final int LOADER_ID_MESSAGES = 0;
@@ -65,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.squawks_recycler_view);
+        mRecyclerView = findViewById(R.id.squawks_recycler_view);
 
         // Use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
@@ -88,6 +92,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Start the loader
         getSupportLoaderManager().initLoader(LOADER_ID_MESSAGES, null, this);
 
+        // get notification directly form firebase console
+        // select GROW -> Notifications
+        // https://console.firebase.google.com/project/squawker-b2eb2/notification/compose?campaignId=7364157308717098897&dupe=true
+        // it will create automatic notifications on the device from the Firebase lib itself.
+        // it will only display notification if the app is on the background
+
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null && extras.containsKey("testkey")) {
@@ -96,15 +106,28 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             Log.i("Sergio>", this + " onCreate\nextras= " + extras.getString("testkey"));
         }
 
-        String token = FirebaseInstanceId.getInstance().getToken();
 
+        String token = FirebaseInstanceId.getInstance().getToken();
 
         // You'll need to implement the onTokenRefresh method. Simply have it print out	the new token
         String msg = getString(R.string.message_token_format, token);
 
         Log.d(LOG_TAG, msg);
-        // dEVrl43NJ68:APA91bHGydNvnPQRaFGtyl67fKy9xI1w2-yYryND_wyykySLeuJoOXMQSC473TND48Oz9CkuMhpCJArizTVpvpIcbd_N6p3dHH2vGt6CCZVxImVlZat_3id3SRZrOPOIfANHaCs6xRFH
+        // this Firebase token changes everytime the app is reinstalled
+        // eAbZ8L3lnz8:APA91bF5Xt03b09QMU4oBwAdpI-74tTzm2uF_1fo2q0CRr_-VmKB_nh28zB90TyrYfdHW7HXppN6S8KZJDWqL-DvKCxINm7nPy8Dr_qZ8wtMyo2zhwU0VLpXGeS6uqd_jRvKgK3P3JWX
 
+
+        // Subscribe to topics
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean defaultFollow = getResources().getBoolean(R.bool.follow_default_message_subscription);
+        for (int i = 0; i < INSTRUCTOR_KEYS.length; i++) {
+            if (prefs.getBoolean(INSTRUCTOR_KEYS[i], defaultFollow)) {
+                FirebaseMessaging.getInstance().subscribeToTopic(INSTRUCTOR_KEYS[i]);
+            }
+        }
+
+        // Register the listener
+        prefs.registerOnSharedPreferenceChangeListener(this);
 
     }
 
@@ -151,4 +174,29 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoaderReset(Loader<Cursor> loader) {
         mAdapter.swapCursor(null);
     }
+
+    /**
+     * Called when a shared preference is changed, added, or removed. This
+     * may be called even if a preference is set to its existing value.
+     * <p>
+     * <p>This callback will be run on your main thread.
+     *
+     * @param sharedPreferences The {@link SharedPreferences} that received
+     *                          the change.
+     * @param key               The key of the preference that was changed, added, or
+     */
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        // ReStart the loader if the preferences has changed
+        getSupportLoaderManager().restartLoader(LOADER_ID_MESSAGES, null, this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Unregister VisualizerActivity as an OnPreferenceChangedListener to avoid any memory leaks.
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
+    }
+
 }
