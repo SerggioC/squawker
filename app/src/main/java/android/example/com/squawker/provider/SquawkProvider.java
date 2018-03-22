@@ -27,9 +27,7 @@ import net.simonvt.schematic.annotation.TableEndpoint;
  * URIs for the provider
  */
 
-@ContentProvider(
-        authority = SquawkProvider.AUTHORITY,
-        database = SquawkDatabase.class)
+@ContentProvider(authority = SquawkProvider.AUTHORITY, database = SquawkDatabase.class)
 public final class SquawkProvider {
 
     public static final String AUTHORITY = "android.example.com.squawker.provider.provider";

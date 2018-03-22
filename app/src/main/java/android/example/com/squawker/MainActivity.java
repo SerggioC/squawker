@@ -34,10 +34,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.PopupWindow;
+
+import com.google.firebase.iid.FirebaseInstanceId;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static String LOG_TAG = MainActivity.class.getSimpleName();
+    private static String LOG_TAG = "Sergio> " + MainActivity.class.getSimpleName();
     private static final int LOADER_ID_MESSAGES = 0;
 
     RecyclerView mRecyclerView;
@@ -84,6 +87,24 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Start the loader
         getSupportLoaderManager().initLoader(LOADER_ID_MESSAGES, null, this);
+
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        if (extras != null && extras.containsKey("testkey")) {
+            PopupWindow window = new PopupWindow(this);
+            window.showAsDropDown(mRecyclerView);
+            Log.i("Sergio>", this + " onCreate\nextras= " + extras.getString("testkey"));
+        }
+
+        String token = FirebaseInstanceId.getInstance().getToken();
+
+
+        // You'll need to implement the onTokenRefresh method. Simply have it print out	the new token
+        String msg = getString(R.string.message_token_format, token);
+
+        Log.d(LOG_TAG, msg);
+        // dEVrl43NJ68:APA91bHGydNvnPQRaFGtyl67fKy9xI1w2-yYryND_wyykySLeuJoOXMQSC473TND48Oz9CkuMhpCJArizTVpvpIcbd_N6p3dHH2vGt6CCZVxImVlZat_3id3SRZrOPOIfANHaCs6xRFH
+
 
     }
 
