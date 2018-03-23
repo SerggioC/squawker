@@ -10,8 +10,11 @@ get token from device using: String token = FirebaseInstanceId.getInstance().get
 FCM has documentation for both Android and setting up server code:
 
 The Android documentation is [here](https://firebase.google.com/docs/cloud-messaging/android/client)
-Documentation about how messages are sent from FCM to client is [here](https://firebase.google.com/docs/cloud-messaging/concept-options)
+
+Documentation about how messages are sent from FCM to client is [here](https://firebase.google.com/docs/cloud-messaging/concept-options).
+
 Detailed information about setting up an FCM server like the [Squawker udcity server](https://squawkerfcmserver.udacity.com/) is [here](https://firebase.google.com/docs/cloud-messaging/server)
+
 You can check out [this blog post](https://firebase.googleblog.com/2016/08/sending-notifications-between-android.html) for an example of some Node.js code for setting up an FCM server. The library used for the Squawker server is called [fcm-node](https://www.npmjs.com/package/fcm-node).
 
 If you're interested in learning more about Android and Firebase, consider taking Udacity's [Firebase in a Weekend](https://www.udacity.com/course/firebase-in-a-weekend-by-google-android--ud0352) course for Android. The class is free and walks you through the creation of a real time chat app with user accounts, photo sharing and more, using Firebase as a backend.
